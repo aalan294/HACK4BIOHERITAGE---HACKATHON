@@ -57,6 +57,7 @@ const Div = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  z-index: 99;
 `
 
 const ToggleMenuButton = styled.button`
@@ -80,6 +81,7 @@ const MenuContainer = styled.div`
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 300px;
+  z-index: 99;
   a{
     text-decoration: none;
     color: inherit;

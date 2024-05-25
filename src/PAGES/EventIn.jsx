@@ -4,20 +4,20 @@ import Web3 from 'web3';
 import { abi } from '../abi';
 import Menu from '../COMPONENTS/Menu';
 import { useNavigate } from 'react-router-dom';
+import gif from '../ASSETS/loader.gif';
 
 const EventIn = ({ contract, user, setUser }) => {
   const [events, setEvents] = useState([]);
+  const [loader, setLoader] = useState(true);
+  const navigate = useNavigate();
 
-  const navigate = useNavigate()
-
-  useEffect(()=>{
-    if(!localStorage.getItem('BioHeritageHub')){
-      navigate('/')
+  useEffect(() => {
+    if (!localStorage.getItem('BioHeritageHub')) {
+      navigate('/');
+    } else {
+      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address);
     }
-    else{
-      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address)
-    }
-},[])
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -37,8 +37,10 @@ const EventIn = ({ contract, user, setUser }) => {
         }
 
         setEvents(eventsArray);
+        setLoader(false);
       } catch (error) {
         console.error('Error fetching events:', error);
+        setLoader(false);
       }
     };
 
@@ -47,8 +49,9 @@ const EventIn = ({ contract, user, setUser }) => {
 
   return (
     <DashboardContainer>
+      {loader && <Loader src={gif} alt="loading..." />}
       <div className="menu">
-        <Menu contract={contract} user = {user} />
+        <Menu contract={contract} user={user} />
       </div>
       <h1>Registered Events</h1>
       {events.length > 0 ? (
@@ -75,11 +78,13 @@ const DashboardContainer = styled.div`
   flex-direction: column;
   align-items: center;
   height: 100vh;
+
   .menu {
     position: absolute;
     top: 1rem;
     right: 1rem;
   }
+
   h1 {
     color: #2e7d32;
     margin-bottom: 20px;
@@ -119,6 +124,13 @@ const NoEvents = styled.p`
   color: #555;
   font-size: 1.2rem;
   margin-top: 20px;
+`;
+
+const Loader = styled.img`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 export default EventIn;

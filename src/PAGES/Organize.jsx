@@ -4,6 +4,7 @@ import Web3 from 'web3';
 import { abi } from '../abi';
 import { useNavigate } from 'react-router-dom';
 import Menu from '../COMPONENTS/Menu';
+import gif from '../ASSETS/loader.gif';
 
 const OrganizeContainer = styled.div`
   display: flex;
@@ -34,7 +35,8 @@ const FormContainer = styled.div`
     display: flex;
     flex-direction: column;
 
-    input, select {
+    input,
+    select {
       margin-bottom: 15px;
       padding: 10px;
       border: 1px solid #ccc;
@@ -71,6 +73,13 @@ const FormContainer = styled.div`
   }
 `;
 
+const Loader = styled.img`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
+
 const MenuContainer = styled.div`
   position: fixed;
   top: 20px;
@@ -83,6 +92,7 @@ const Organize = ({ contract, user, setUser }) => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
+  const [loader, setLoader] = useState(false);
 
   const navigate = useNavigate();
 
@@ -91,26 +101,16 @@ const Organize = ({ contract, user, setUser }) => {
     return Math.floor(new Date(datetime).getTime() / 1000);
   };
 
-  useEffect(()=>{
-    if(!localStorage.getItem('BioHeritageHub')){
-      navigate('/')
-    }
-    else{
-      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address)
-    }
-},[])
-
   useEffect(() => {
-    const sample = async () => {
-      const web3 = new Web3(window.ethereum);
-      const Instance = new web3.eth.Contract(abi, contract);
-      const result = await Instance.methods.eventCount().call();
-      console.log(result);
-    };
-    sample();
+    if (!localStorage.getItem('BioHeritageHub')) {
+      navigate('/');
+    } else {
+      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address);
+    }
   }, []);
 
   const handleSubmitForm = async (e) => {
+    setLoader(true);
     e.preventDefault();
     try {
       const web3 = new Web3(window.ethereum);
@@ -125,9 +125,10 @@ const Organize = ({ contract, user, setUser }) => {
         )
         .send({ from: user });
       alert('Event created successfully!');
+      setLoader(false);
       navigate('/dashboard');
     } catch (err) {
-      console.log(err);
+      setLoader(false);
       alert('Failed to create event');
     }
   };
@@ -175,8 +176,9 @@ const Organize = ({ contract, user, setUser }) => {
         </form>
       </FormContainer>
       <MenuContainer>
-        <Menu contract={contract} user = {user} />
+        <Menu contract={contract} user={user} />
       </MenuContainer>
+      {loader && <Loader src={gif} alt="Loader" />}
     </OrganizeContainer>
   );
 };

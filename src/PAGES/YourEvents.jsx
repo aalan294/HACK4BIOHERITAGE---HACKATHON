@@ -4,24 +4,26 @@ import Web3 from 'web3';
 import { abi } from '../abi';
 import Menu from '../COMPONENTS/Menu';
 import { useNavigate } from 'react-router-dom';
+import gif from '../ASSETS/loader.gif';
 
 const YourEvents = ({ contract, user, setUser }) => {
   const [yourEvents, setYourEvents] = useState([]);
+  const [loader, setLoader] = useState(true);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(!localStorage.getItem('BioHeritageHub')){
-      navigate('/')
+  useEffect(() => {
+    if (!localStorage.getItem('BioHeritageHub')) {
+      navigate('/');
+    } else {
+      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address);
     }
-    else{
-      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address)
-    }
-},[])
+  }, []);
 
   useEffect(() => {
     const fetchYourEvents = async () => {
       try {
+        setLoader(true);
         const web3 = new Web3(window.ethereum);
         const Instance = new web3.eth.Contract(abi, contract);
         const result = await Instance.methods.eventCount().call();
@@ -36,7 +38,9 @@ const YourEvents = ({ contract, user, setUser }) => {
         }
 
         setYourEvents(yourEventsArray);
+        setLoader(false);
       } catch (error) {
+        setLoader(false);
         console.error('Error fetching your events:', error);
       }
     };
@@ -46,12 +50,13 @@ const YourEvents = ({ contract, user, setUser }) => {
 
   const handleEndEvent = async (id) => {
     try {
+      setLoader(true);
       const web3 = new Web3(window.ethereum);
       const Instance = new web3.eth.Contract(abi, contract);
       await Instance.methods.endEvent(id).send({ from: user });
       alert(`Event ${id} ended successfully`);
       // After ending the event, update the list of events
-      const updatedEvents = yourEvents.map(event => {
+      const updatedEvents = yourEvents.map((event) => {
         if (event.id === id) {
           return { ...event, ended: true }; // Mark the event as ended
         }
@@ -61,13 +66,16 @@ const YourEvents = ({ contract, user, setUser }) => {
     } catch (error) {
       console.error('Error ending event:', error);
       alert(`Failed to end event ${id}: ${error.message}`);
+    } finally {
+      setLoader(false);
     }
   };
 
   return (
     <EventsContainer>
+      {loader && <Loader src={gif} alt="Loading..." />} {/* Render loader if loader state is true */}
       <MenuContainer>
-        <Menu contract={contract} user = {user} />
+        <Menu contract={contract} user={user} />
       </MenuContainer>
       <h1>Your Events</h1>
       {yourEvents.length > 0 ? (
@@ -91,6 +99,13 @@ const YourEvents = ({ contract, user, setUser }) => {
     </EventsContainer>
   );
 };
+
+const Loader = styled.img`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
 
 const MenuContainer = styled.div`
   position: absolute;

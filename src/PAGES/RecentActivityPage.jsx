@@ -3,9 +3,11 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { abi } from '../abi';
 import Menu from '../COMPONENTS/Menu';
+import gif from '../ASSETS/loader.gif';
 
 const RecentActivityPage = ({ contract, user }) => {
   const [userEvents, setUserEvents] = useState([]);
+  const [loader, setLoader] = useState(true);
 
   useEffect(() => {
     fetchUserEvents();
@@ -46,8 +48,10 @@ const RecentActivityPage = ({ contract, user }) => {
       });
 
       setUserEvents(formattedEvents);
+      setLoader(false);
     } catch (error) {
       console.error('Error fetching user events:', error);
+      setLoader(false);
     }
   };
 
@@ -55,18 +59,22 @@ const RecentActivityPage = ({ contract, user }) => {
     <RecentActivityContainer>
       <h2>Recent Activity</h2>
       <MenuContainer>
-        <Menu contract={contract} user = {user} />
+        <Menu contract={contract} user={user} />
       </MenuContainer>
       <EventList>
-        {userEvents.map((event, index) => (
-          <EventRow key={index}>
-            <p>Event Type: {event.type}</p>
-            <p>Product ID: {Number(event.productId)}</p>
-            <p>{event.type === 'ProductListed' ? 'Seller' : 'Buyer'}: {event.type === 'ProductListed' ? event.seller : event.buyer}</p>
-            <p>Name: {event.name}</p>
-            <p>Price in Tokens: {event.priceInTokens}</p>
-          </EventRow>
-        ))}
+        {loader ? (
+          <Loader src={gif} alt="Loader" />
+        ) : (
+          userEvents.map((event, index) => (
+            <EventRow key={index}>
+              <p>Event Type: {event.type}</p>
+              <p>Product ID: {Number(event.productId)}</p>
+              <p>{event.type === 'ProductListed' ? 'Seller' : 'Buyer'}: {event.type === 'ProductListed' ? event.seller : event.buyer}</p>
+              <p>Name: {event.name}</p>
+              <p>Price in Tokens: {event.priceInTokens}</p>
+            </EventRow>
+          ))
+        )}
       </EventList>
     </RecentActivityContainer>
   );
@@ -104,6 +112,11 @@ const MenuContainer = styled.div`
   position: fixed;
   top: 20px;
   right: 20px;
+`;
+
+const Loader = styled.img`
+  width: 50px;
+  height: 50px;
 `;
 
 export default RecentActivityPage;

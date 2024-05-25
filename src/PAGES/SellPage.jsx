@@ -4,32 +4,38 @@ import Web3 from 'web3';
 import { abi } from '../abi';
 import { useNavigate } from 'react-router-dom';
 import Menu from '../COMPONENTS/Menu';
+import gif from '../ASSETS/loader.gif';
 
 const SellPage = ({ contract, user }) => {
   const [productName, setProductName] = useState('');
   const [priceInTokens, setPriceInTokens] = useState('');
   const navigate = useNavigate();
+  const [loader, setLoader] = useState(false);
 
   const handleSell = async (event) => {
+    setLoader(true);
     event.preventDefault(); // Prevent default form submission behavior
 
     try {
       const web3 = new Web3(window.ethereum);
       const instance = new web3.eth.Contract(abi, contract);
       await instance.methods.listProduct(productName, priceInTokens).send({ from: user });
+      setLoader(false);
       navigate('/market');
     } catch (error) {
+      setLoader(false);
       alert(error.message);
     }
   };
 
   return (
     <SellContainer>
+      {loader && <Loader src={gif} alt="Loading..." />}
       <h2>Sell Product</h2>
       <MenuContainer>
-        <Menu contract={contract} user = {user} />
+        <Menu contract={contract} user={user} />
       </MenuContainer>
-      <SellForm onSubmit={handleSell}> {/* Use onSubmit event to handle form submission */}
+      <SellForm onSubmit={handleSell}>
         <InputLabel htmlFor="productName">Product Name:</InputLabel>
         <Input
           type="text"
@@ -44,11 +50,18 @@ const SellPage = ({ contract, user }) => {
           value={priceInTokens}
           onChange={(e) => setPriceInTokens(e.target.value)}
         />
-        <SellButton type="submit">Sell</SellButton> {/* Specify type="submit" for the button */}
+        <SellButton type="submit">Sell</SellButton>
       </SellForm>
     </SellContainer>
   );
 };
+
+const Loader = styled.img`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+`;
 
 const MenuContainer = styled.div`
   position: fixed;
@@ -64,6 +77,7 @@ const SellContainer = styled.div`
   align-items: center;
   justify-content: center;
   height: 100vh;
+  position: relative; /* Ensure proper positioning of loader */
 `;
 
 const SellForm = styled.form`
@@ -95,6 +109,7 @@ const SellButton = styled.button`
   cursor: pointer;
   transition: background-color 0.3s ease;
   width: 100%;
+
   &:hover {
     background-color: #1b5e20;
   }

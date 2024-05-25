@@ -4,20 +4,20 @@ import Web3 from 'web3';
 import { abi } from '../abi';
 import { useNavigate } from 'react-router-dom';
 import Menu from '../COMPONENTS/Menu';
+import gif from '../ASSETS/loader.gif';
 
 const DashboardPage = ({ contract, user, setUser }) => {
   const [events, setEvents] = useState([]);
-
+  const [loader, setLoader] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(!localStorage.getItem('BioHeritageHub')){
-      navigate('/')
+  useEffect(() => {
+    if (!localStorage.getItem('BioHeritageHub')) {
+      navigate('/');
+    } else {
+      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address);
     }
-    else{
-      setUser(JSON.parse(localStorage.getItem('BioHeritageHub')).address)
-    }
-},[])
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -40,8 +40,10 @@ const DashboardPage = ({ contract, user, setUser }) => {
         }
 
         setEvents(eventsArray);
+        setLoader(false);
       } catch (error) {
         console.error('Error fetching events:', error);
+        setLoader(false);
       }
     };
 
@@ -50,19 +52,23 @@ const DashboardPage = ({ contract, user, setUser }) => {
 
   const handleApply = async (id) => {
     try {
+      setLoader(true);
       const web3 = new Web3(window.ethereum);
       const Instance = new web3.eth.Contract(abi, contract);
       await Instance.methods.participateInEvent(id).send({ from: user });
+      setLoader(false);
       navigate('/events-in');
     } catch (error) {
       alert(error.message);
+      setLoader(false);
     }
   };
 
   return (
     <DashboardContainer>
+      {loader && <Loader src={gif} alt="loading..." />}
       <div className="menu">
-        <Menu contract={contract} user = {user} />
+        <Menu contract={contract} user={user} />
       </div>
       <h1>Events Dashboard</h1>
       {events.length > 0 ? (
@@ -96,11 +102,14 @@ const DashboardContainer = styled.div`
   flex-direction: column;
   align-items: center;
   height: 100vh;
+  position: relative;
+
   .menu {
     position: absolute;
     top: 1rem;
     right: 1rem;
   }
+
   h1 {
     color: #2e7d32;
     margin-bottom: 20px;
@@ -160,6 +169,13 @@ const NoEvents = styled.p`
   color: #555;
   font-size: 1.2rem;
   margin-top: 20px;
+`;
+
+const Loader = styled.img`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 export default DashboardPage;

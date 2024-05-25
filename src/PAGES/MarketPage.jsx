@@ -4,11 +4,13 @@ import styled from 'styled-components';
 import Web3 from 'web3';
 import { abi } from '../abi';
 import Menu from '../COMPONENTS/Menu';
+import gif from '../ASSETS/loader.gif';
 
-const MarketPage = ({ contract, user, setuser }) => {
+const MarketPage = ({ contract, user, setUser }) => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [userTokens, setUserTokens] = useState(0); // Assuming you have a state for user tokens
+  const [userTokens, setUserTokens] = useState(0);
+  const [loader, setLoader] = useState(true);
 
   useEffect(() => {
     fetchProducts();
@@ -16,14 +18,22 @@ const MarketPage = ({ contract, user, setuser }) => {
   }, []);
 
   const fetchUserTokens = async () => {
-    const web3 = new Web3(window.ethereum);
-    const instance = new web3.eth.Contract(abi, contract);
-    const tokenCount = await instance.methods.balanceOf(user).call();
-    setUserTokens(Number(tokenCount));
+    try {
+      setLoader(true);
+      const web3 = new Web3(window.ethereum);
+      const instance = new web3.eth.Contract(abi, contract);
+      const tokenCount = await instance.methods.balanceOf(user).call();
+      setUserTokens(Number(tokenCount));
+      setLoader(false);
+    } catch (error) {
+      console.error('Error fetching user tokens:', error);
+      setLoader(false);
+    }
   };
 
   const fetchProducts = async () => {
     try {
+      setLoader(true);
       const web3 = new Web3(window.ethereum);
       const instance = new web3.eth.Contract(abi, contract);
       const productCount = await instance.methods.productCount().call();
@@ -36,13 +46,16 @@ const MarketPage = ({ contract, user, setuser }) => {
       }
 
       setProducts(productsArray);
+      setLoader(false);
     } catch (error) {
       console.error('Error fetching products:', error);
+      setLoader(false);
     }
   };
 
   const handleBuyProduct = async (productId, priceInTokens, index) => {
     try {
+      setLoader(true);
       const web3 = new Web3(window.ethereum);
       const instance = new web3.eth.Contract(abi, contract);
 
@@ -59,6 +72,8 @@ const MarketPage = ({ contract, user, setuser }) => {
     } catch (error) {
       console.error('Error buying product:', error);
       alert('Failed to buy product');
+    } finally {
+      setLoader(false);
     }
   };
 
@@ -70,20 +85,24 @@ const MarketPage = ({ contract, user, setuser }) => {
           <Menu contract={contract} user={user} />
         </div>
       </MenuContainer>
-      <ProductGrid>
-        {products.map((product, index) => (
-          <ProductCard key={index} sold={product.sold}>
-            <h3>{product.name}</h3>
-            <p>Price: {Number(product.priceInTokens)} Tokens</p>
-            <button
-              onClick={() => handleBuyProduct(product.id, Number(product.priceInTokens), index)}
-              disabled={product.sold}
-            >
-              {product.sold ? 'Sold' : 'Buy'}
-            </button>
-          </ProductCard>
-        ))}
-      </ProductGrid>
+      {loader ? (
+        <Loader src={gif} alt="Loading..." />
+      ) : (
+        <ProductGrid>
+          {products.map((product, index) => (
+            <ProductCard key={index} sold={product.sold}>
+              <h3>{product.name}</h3>
+              <p>Price: {Number(product.priceInTokens)} Tokens</p>
+              <button
+                onClick={() => handleBuyProduct(product.id, Number(product.priceInTokens), index)}
+                disabled={product.sold}
+              >
+                {product.sold ? 'Sold' : 'Buy'}
+              </button>
+            </ProductCard>
+          ))}
+        </ProductGrid>
+      )}
     </MarketContainer>
   );
 };
@@ -91,11 +110,12 @@ const MarketPage = ({ contract, user, setuser }) => {
 const MarketContainer = styled.div`
   padding: 20px;
   margin-top: 4rem;
+  position: relative; /* Ensure relative positioning for the loader */
 `;
 
 const MenuContainer = styled.div`
   position: absolute;
-  top: 1rem;
+  top: 0rem;
   right: 1rem;
   display: flex;
   justify-content: flex-end;
@@ -120,6 +140,12 @@ const ProductGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
+`;
+const Loader = styled.img`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 const ProductCard = styled.div`
@@ -157,9 +183,9 @@ const ProductCard = styled.div`
     font-size: 1rem;
 
     &:hover {
-      background-color: ${(props) => (props.sold ? '#bdbdbd' : '#1b5e20')};
-    }
-  }
+      background-color: ${(props) => (props.sold ?'#bdbdbd' : '#1b5e20')};
+}
+}
 `;
 
 export default MarketPage;

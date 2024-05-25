@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { abi } from '../abi';
 import Web3 from 'web3';
-import Menu from '../COMPONENTS/Menu'; // Assuming you have a Menu component
+import gif from '../ASSETS/loader.gif';
 
 const HomePage = ({ contract, setUser }) => {
   const navigate = useNavigate();
+  const [loader, setLoader] = useState(false);
 
   const handleLogin = async () => {
+    setLoader(true);
     if (typeof window.ethereum !== 'undefined') {
       try {
         let accounts = await window.ethereum.request({
@@ -31,6 +33,8 @@ const HomePage = ({ contract, setUser }) => {
         } else {
           alert('Check whether you have installed METAMASK or may have NETWORK issues');
         }
+      } finally {
+        setLoader(false);
       }
     } else {
       alert('Please Install Metamask to use this Application');
@@ -38,6 +42,7 @@ const HomePage = ({ contract, setUser }) => {
   };
 
   const handleRegister = async () => {
+    setLoader(true);
     if (typeof window.ethereum !== 'undefined') {
       try {
         let accounts = await window.ethereum.request({
@@ -61,6 +66,8 @@ const HomePage = ({ contract, setUser }) => {
         } else {
           alert('Check whether you have installed METAMASK or may have NETWORK issues');
         }
+      } finally {
+        setLoader(false);
       }
     } else {
       alert('Please Install Metamask to use this Application');
@@ -69,13 +76,14 @@ const HomePage = ({ contract, setUser }) => {
 
   return (
     <HomeContainer>
+      {loader && <Loader src={gif} alt="loading..." />}
       <Container>
         <Title>BioHeritage Activity Hub</Title>
         <Subtitle>
           A decentralized platform for community engagement and environmental conservation.
         </Subtitle>
         <Description>
-          Our project aims to promote sustainable practices and support tribal communities by enabling users to participate in conservation activities and earn tokens as rewards. These tokens can be used in a marketplace to buy handmade products from tribal communities.
+          Our project aims to promote sustainable practices and support tribal communities by enabling users to participate in conservation activities and earn tokens as rewards. These tokens can be used in a marketplace to buy handmade products from tribal communities. Recieve 10 Tokens🪙 for each event you participate.
         </Description>
         <ButtonContainer>
           <StyledButton onClick={handleRegister}>Register</StyledButton>
@@ -93,12 +101,6 @@ const HomeContainer = styled.div`
   height: 100vh;
   background: linear-gradient(to bottom, #e8f5e9, #c8e6c9);
   position: relative;
-`;
-
-const MenuContainer = styled.div`
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
 `;
 
 const Container = styled.div`
@@ -148,9 +150,12 @@ const StyledButton = styled.button`
   font-size: 1rem;
   transition: all 0.3s ease-in-out;
 
-  &:hover {
-    background-color: #1b5e20;
+  &
+  {
+  background-color: #1b5e20;
   }
-`;
+  `;
 
-export default HomePage;
+  const Loader = styled.img` position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; `;
+
+  export default HomePage;
