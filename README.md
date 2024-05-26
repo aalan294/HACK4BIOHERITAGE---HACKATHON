@@ -54,6 +54,9 @@ To run the project locally, follow these steps:
 - **Application:** [Hosted Link](https://hack4bioheritage-hackathon-activity-hub.onrender.com/)
 - **Sepolia Smart Contract:** [Etherscan Link](https://sepolia.etherscan.io/address/0xc1b3d1405dcddbd3d035f67058d13bc79ac51e20)
 
+## Smart Contract
+The smart contract for the BioHeritage Activity Hub is included in the `SMART CONTRACT` folder. You can copy the smart contract code from `Bioheritage.sol` and paste it into Remix IDE to compile it. After deployment, update the contract address in the `contract` variable in `App.js`.
+
 ## Challenges
 Developing the BioHeritage Activity Hub involved creating multiple pages for user interfaces, managing blockchain interactions, and ensuring secure and efficient operations. Despite these challenges, the project was successfully completed by leveraging the capabilities of Ethereum and efficient coding practices.
 
@@ -61,7 +64,7 @@ Developing the BioHeritage Activity Hub involved creating multiple pages for use
 Contributions are welcome! Please fork the repository and submit pull requests for any improvements or bug fixes.
 
 ## License
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Contact
 For any queries or support, please contact:
